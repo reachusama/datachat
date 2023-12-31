@@ -28,12 +28,13 @@ An open-source software for data analysis using natural language queries.
 ## LLMs Deployment
 
 - [LC x HF Text Generation](https://python.langchain.com/docs/integrations/llms/huggingface_textgen_inference)
-- [Hugging Face Text Generation](https://github.com/huggingface/text-generation-inference)
+- [Hugging Face CodeT5p-16B](https://huggingface.co/Salesforce/instructcodet5p-16b)
 
-```angular2html
 
-model=tiiuae/falcon-7b-instruct
-volume=$PWD/data # share a volume with the Docker container to avoid downloading weights every run
+- https://huggingface.co/docs/text-generation-inference/installation
+- https://huggingface.co/blog/inference-endpoints-llm
 
-docker run --gpus all --shm-size 1g -p 8080:80 -v $volume:/data ghcr.io/huggingface/text-generation-inference:1.3 --model-id $model
-```
+## Next steps
+
+- Deploy a custom LLM on Huggingface
+- Use deployed model to build the repository

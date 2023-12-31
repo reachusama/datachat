@@ -4,3 +4,7 @@ huggingface_hub
 transformers
 text_generation
 chardet
+accelerate
+pytorch::pytorch
+torchvision
+torchaudio -c pytorch
