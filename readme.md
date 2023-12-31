@@ -37,4 +37,5 @@ An open-source software for data analysis using natural language queries.
 ## Next steps
 
 - Deploy a custom LLM on Huggingface
+- https://ui.endpoints.huggingface.co/reachusama/endpoints
 - Use deployed model to build the repository
