@@ -1,6 +1,6 @@
 # DataChat
 
-An open-source software for data analysis using natural language queries.
+Data Analysis with Natural Language Queries using GenAI & Streamlit
 
 ## Code Large Language Models
 
