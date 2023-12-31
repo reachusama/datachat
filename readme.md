@@ -21,7 +21,14 @@ Data Analysis with Natural Language Queries using GenAI & Streamlit
 
 - User uploads dataset
 - Get a user query
-- Create code to execute query
+- Convert query into chat plan using LLMs.
+    - Instruction
+        - What to do.
+    - Input
+        - What should be provided as input.
+    - Output
+        - What should be the output.
+- Use chat plan using LLMs.
 - Execute the query
 - Show results
 
