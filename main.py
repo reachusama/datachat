@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
-import os
 from dotenv import load_dotenv
 import os
-
-# Load environment variables from .env file
 
 from langchain.agents import AgentType, initialize_agent
 from langchain.chat_models import ChatOpenAI
@@ -23,7 +20,7 @@ def save_artifact(artifact):
         f.write(file)
 
 
-e2b_data_analysis_tool = E2BDataAnalysisTool(
+st.session_state.e2b_data_analysis_tool = E2BDataAnalysisTool(
     # on_stdout=lambda stdout: print("stdout:", stdout),
     # on_stderr=lambda stderr: print("stderr:", stderr),
     on_stdout=lambda stdout: st.session_state.responses.append(stdout),
@@ -31,7 +28,7 @@ e2b_data_analysis_tool = E2BDataAnalysisTool(
     on_artifact=save_artifact,
 )
 
-tools = [e2b_data_analysis_tool.as_tool()]
+tools = [st.session_state.e2b_data_analysis_tool.as_tool()]
 llm = ChatOpenAI(model="gpt-4", temperature=0)
 
 agent = initialize_agent(
@@ -86,15 +83,16 @@ def main():
                                              key=st.session_state["file_uploader_key"])
 
     # Load the file
-    if uploaded_file is not None and not st.session_state["file_uploaded"]:
+    if uploaded_file is not None:
         data = pd.read_csv(uploaded_file)
         st.write(data)
-        # if not st.session_state["file_uploaded"]:
-        #     remote_path = e2b_data_analysis_tool.upload_file(
-        #         file=uploaded_file,
-        #         description=f"Data columns consist of {', '.join(list(data.columns))}",
-        #     )
-        #     print("UPLOADED FILE: ", remote_path)
+        if not st.session_state["file_uploaded"]:
+            remote_path = st.session_state.e2b_data_analysis_tool.upload_file(
+                file=uploaded_file,
+                description=f"Data columns consist of {', '.join(list(data.columns))}",
+            )
+
+            print("UPLOADED FILE: ", remote_path)
 
         st.session_state["file_uploaded"] = True
         st.sidebar.success("File Uploaded Successfully!")
@@ -116,7 +114,8 @@ def main():
 
     if clear_session_button:
         print("I am here")
-        e2b_data_analysis_tool.close()
+        st.session_state.e2b_data_analysis_tool.close()
+        st.session_state["file_uploaded"] = False
         st.session_state["file_uploader_key"] += 1
         st.rerun()
 
