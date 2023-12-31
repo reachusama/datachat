@@ -42,6 +42,16 @@ def init_agent():
     return e2b_data_analysis_tool, agent
 
 
+@st.cache_resource
+def upload_e2b(_e2b_data_analysis_tool, _file):
+    remote_path = _e2b_data_analysis_tool.upload_file(
+        file=_file,
+        # description=f"Data columns consist of {', '.join(list(data.columns))}",
+        description="Dataset under consideration."
+    )
+    return remote_path
+
+
 # Function to initialize session state variables
 def initialize_session_state():
     if 'responses' not in st.session_state:
@@ -56,34 +66,6 @@ def initialize_session_state():
 
 def process_query(agent, query):
     return agent.run(query)
-
-
-@st.cache_resource
-def upload_e2b(_e2b_data_analysis_tool, _file):
-    remote_path = _e2b_data_analysis_tool.upload_file(
-        file=_file,
-        # description=f"Data columns consist of {', '.join(list(data.columns))}",
-        description="Dataset under consideration."
-    )
-    return remote_path
-
-
-# Function to manage file upload
-def manage_file_upload(uploaded_file, _e2b_data_analysis_tool):
-    if uploaded_file is not None:
-        data = pd.read_csv(uploaded_file)
-        st.write(data)
-        if not st.session_state["file_uploaded"]:
-            remote_path = _e2b_data_analysis_tool.upload_file(
-                file=uploaded_file,
-                description=f"Data columns consist of {', '.join(list(data.columns))}",
-            )
-            print("UPLOADED FILE: ", remote_path)
-            st.session_state["file_uploaded"] = True
-            st.sidebar.success("File Uploaded Successfully!")
-    else:
-        if not st.session_state["file_uploaded"]:
-            st.sidebar.warning("Please upload a file.")
 
 
 # Function to handle query submission
