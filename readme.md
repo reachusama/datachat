@@ -21,15 +21,16 @@ Data Analysis with Natural Language Queries using GenAI & Streamlit
 
 - User uploads dataset
 - Get a user query
-- Convert query into chat plan using LLMs.
-    - Instruction
-        - What to do.
-    - Input
-        - What should be provided as input.
-    - Output
-        - What should be the output.
-- Use chat plan using LLMs.
-- Execute the query
+- Create chat-plan steps.
+- For each:
+    - Convert query into chat plan using LLMs, (query, dataset.shape/dataset.desc)
+        - Instruction
+            - What to do.
+        - Input
+            - What should be provided as input.
+        - Output
+            - What should be the output.
+- Execute chat plan using LLMs.
 - Show results
 
 ## LLMs Deployment
