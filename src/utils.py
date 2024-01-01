@@ -20,20 +20,10 @@ def process_artifact(artifact):
 def process_response(response):
     if 'sandbox' in response:
         url, response = extract_and_remove_image_link(response)
-        url = url.replace("sandbox:/home/user/artifacts/", './resources/outputs/')
+        url = url.replace("sandbox:/home/user/artifacts/", '../resources/outputs/')
         return [
             {"type": "text", "output": response},
             {"type": "image", "output": url}
         ]
 
     return [{"type": "text", "output": response}]
-
-
-stt = """
-Here is the scatter plot showing the relationship between the total number of rooms and the population.
-
-![Total Rooms vs Population](sandbox:/home/user/artifacts/figure_20240101-015233.png)
-"""
-
-if __name__ == '__main__':
-    print(process_response(stt))
