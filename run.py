@@ -1,6 +1,6 @@
+from dotenv import load_dotenv
 import streamlit as st
 import pandas as pd
-from dotenv import load_dotenv
 import os
 
 from langchain.agents import AgentType, initialize_agent
@@ -16,6 +16,22 @@ def save_artifact(artifact):
     basename = os.path.basename(artifact.name)
     with open(f"./resources/outputs/{basename}", "wb") as f:
         f.write(file)
+
+
+@st.cache_resource
+def init_upload_sandbox(_file):
+    e2b_data_analysis_tool = E2BDataAnalysisTool(
+        on_stdout=lambda stdout: print(stdout),
+        on_stderr=lambda stderr: print(stderr),
+        on_artifact=save_artifact,
+    )
+    remote_path = e2b_data_analysis_tool.upload_file(
+        file=_file,
+        # description=f"Data columns consist of {', '.join(list(data.columns))}",
+        description="Dataset under consideration."
+    )
+    print(remote_path)
+    return e2b_data_analysis_tool
 
 
 # Function to initialize the agent
@@ -35,30 +51,12 @@ def init_agent():
     return agent
 
 
-@st.cache_resource
-def init_upload_sandbox(_file):
-    e2b_data_analysis_tool = E2BDataAnalysisTool(
-        on_stdout=lambda stdout: print(stdout),
-        on_stderr=lambda stderr: print(stderr),
-        on_artifact=save_artifact,
-    )
-    remote_path = e2b_data_analysis_tool.upload_file(
-        file=_file,
-        # description=f"Data columns consist of {', '.join(list(data.columns))}",
-        description="Dataset under consideration."
-    )
-    print(remote_path)
-    return e2b_data_analysis_tool
-
-
 # Function to initialize session state variables
 def initialize_session_state():
     if 'responses' not in st.session_state:
         st.session_state.responses = []
     if "file_uploader_key" not in st.session_state:
         st.session_state["file_uploader_key"] = 0
-    if "file_uploaded" not in st.session_state:
-        st.session_state["file_uploaded"] = False
 
 
 # Function to handle query submission
@@ -78,7 +76,6 @@ def handle_session_reset(clear_session_button):
     if clear_session_button:
         print("Session reset initiated")
         st.session_state.e2b_data_analysis_tool.close()
-        st.session_state["file_uploaded"] = False
         st.session_state["file_uploader_key"] += 1
         st.session_state.responses = []
         st.rerun()
