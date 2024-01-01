@@ -20,10 +20,10 @@ def process_artifact(artifact):
 
 
 @st.cache_resource
-def init_upload_sandbox(_data, _file):
+def init_upload_sandbox(_data):
     e2b_data_analysis_tool = E2BDataAnalysisTool(
-        on_stdout=lambda stdout: print(stdout),
-        on_stderr=lambda stderr: print(stderr),
+        on_stdout=lambda stdout: print(f"stdout: {stdout}"),
+        on_stderr=lambda stderr: print(f"stderr: {stderr}"),
         on_artifact=process_artifact,
     )
 
@@ -70,8 +70,9 @@ def handle_query_submission(submit_button, query, query_warning_placeholder):
         if not query.strip():
             query_warning_placeholder.warning("Please enter a query.")
         else:
-            st_callback = StreamlitCallbackHandler(st.container())
-            response = st.session_state.agent.run(query, callbacks=[st_callback])
+            # st_callback = StreamlitCallbackHandler(st.container())
+            # response = st.session_state.agent.run(query, callbacks=[st_callback])
+            response = st.session_state.agent.run(query)
             st.session_state.responses.append(response)
             query_warning_placeholder.empty()
 
@@ -114,9 +115,8 @@ def main():
     if uploaded_file is not None:
         data = pd.read_csv(uploaded_file)
         st.write(data)
-        # Initialize tools and agent
 
-        st.session_state.e2b_data_analysis_tool = init_upload_sandbox(data, uploaded_file)
+        st.session_state.e2b_data_analysis_tool = init_upload_sandbox(data)
         st.session_state.agent = init_agent()
         st.sidebar.success("File Uploaded Successfully!")
     else:
@@ -136,6 +136,6 @@ def main():
 
 
 if __name__ == "__main__":
-    load_dotenv()
     st.set_page_config(layout="wide")
+    load_dotenv()
     main()
