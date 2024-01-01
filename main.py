@@ -2,21 +2,16 @@ from dotenv import load_dotenv
 from io import StringIO
 import streamlit as st
 import pandas as pd
-import os
 
 from langchain.agents import AgentType, initialize_agent
 from langchain.chat_models import ChatOpenAI
 from langchain.tools import E2BDataAnalysisTool
 from langchain.callbacks import StreamlitCallbackHandler
 
-
-# Function to save generated artifacts
-def process_artifact(artifact):
-    print("New matplotlib chart generated:", artifact.name)
-    file = artifact.download()
-    basename = os.path.basename(artifact.name)
-    with open(f"./resources/outputs/{basename}", "wb") as f:
-        f.write(file)
+from utils import (
+    process_artifact,
+    process_response
+)
 
 
 @st.cache_resource
@@ -39,7 +34,6 @@ def init_upload_sandbox(_data):
     return e2b_data_analysis_tool
 
 
-# Function to initialize the agent
 @st.cache_resource
 def init_agent():
     tools = [st.session_state.e2b_data_analysis_tool.as_tool()]
@@ -56,7 +50,6 @@ def init_agent():
     return agent
 
 
-# Function to initialize session state variables
 def initialize_session_state():
     if 'responses' not in st.session_state:
         st.session_state.responses = []
@@ -64,20 +57,21 @@ def initialize_session_state():
         st.session_state["file_uploader_key"] = 0
 
 
-# Function to handle query submission
 def handle_query_submission(submit_button, query, query_warning_placeholder):
     if submit_button:
         if not query.strip():
             query_warning_placeholder.warning("Please enter a query.")
         else:
-            # st_callback = StreamlitCallbackHandler(st.container())
+            # st.session_state.progress = st.container()
+            # st_callback = StreamlitCallbackHandler(st.session_state.progress)
             # response = st.session_state.agent.run(query, callbacks=[st_callback])
-            response = st.session_state.agent.run(query)
-            st.session_state.responses.append(response)
-            query_warning_placeholder.empty()
+            with st.spinner('Thinking...'):
+                response = st.session_state.agent.run(query)
+                response = process_response(response)
+                st.session_state.responses.append(response)
+                query_warning_placeholder.empty()
 
 
-# Function to handle session reset
 def handle_session_reset(clear_session_button):
     if clear_session_button:
         print("Session reset initiated")
@@ -93,7 +87,11 @@ def display_responses(response_container):
         if st.session_state.responses:
             for idx, response in enumerate(st.session_state.responses, 1):
                 with st.expander(f"Response #{idx}", expanded=True):
-                    st.write(response)
+                    for res in response:
+                        if res['type'] == 'text':
+                            st.write(res['output'])
+                        else:
+                            st.image(res['output'])
 
 
 # Main function
