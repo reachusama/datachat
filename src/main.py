@@ -120,16 +120,9 @@ def main():
     else:
         st.sidebar.warning("Please upload a file.")
 
-    # Response container
     response_container = st.empty()
-
-    # Process query
     handle_query_submission(submit_button, query, query_warning_placeholder)
-
-    # Clear session
     handle_session_reset(clear_session_button)
-
-    # Display responses
     display_responses(response_container)
 
 
