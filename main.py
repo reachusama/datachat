@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from io import StringIO
 import streamlit as st
 import pandas as pd
 import os
@@ -10,7 +11,7 @@ from langchain.callbacks import StreamlitCallbackHandler
 
 
 # Function to save generated artifacts
-def save_artifact(artifact):
+def process_artifact(artifact):
     print("New matplotlib chart generated:", artifact.name)
     file = artifact.download()
     basename = os.path.basename(artifact.name)
@@ -19,17 +20,21 @@ def save_artifact(artifact):
 
 
 @st.cache_resource
-def init_upload_sandbox(_file):
+def init_upload_sandbox(_data, _file):
     e2b_data_analysis_tool = E2BDataAnalysisTool(
         on_stdout=lambda stdout: print(stdout),
         on_stderr=lambda stderr: print(stderr),
-        on_artifact=save_artifact,
+        on_artifact=process_artifact,
     )
+
+    csv_data = _data.to_csv(index=False)
+    csv_file = StringIO(csv_data)
+    csv_file.name = "user_data.csv"
     remote_path = e2b_data_analysis_tool.upload_file(
-        file=_file,
-        # description=f"Data columns consist of {', '.join(list(data.columns))}",
-        description="Dataset under consideration."
+        file=csv_file,
+        description=f"Data columns consist of {', '.join(list(_data.columns))}.",
     )
+
     print(remote_path)
     return e2b_data_analysis_tool
 
@@ -111,7 +116,7 @@ def main():
         st.write(data)
         # Initialize tools and agent
 
-        st.session_state.e2b_data_analysis_tool = init_upload_sandbox(uploaded_file)
+        st.session_state.e2b_data_analysis_tool = init_upload_sandbox(data, uploaded_file)
         st.session_state.agent = init_agent()
         st.sidebar.success("File Uploaded Successfully!")
     else:
