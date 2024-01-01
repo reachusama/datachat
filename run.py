@@ -6,9 +6,7 @@ import os
 from langchain.agents import AgentType, initialize_agent
 from langchain.chat_models import ChatOpenAI
 from langchain.tools import E2BDataAnalysisTool
-
-load_dotenv()
-st.set_page_config(layout="wide")
+from langchain.callbacks import StreamlitCallbackHandler
 
 
 # Function to save generated artifacts
@@ -23,12 +21,7 @@ def save_artifact(artifact):
 # Function to initialize the agent
 @st.cache_resource
 def init_agent():
-    e2b_data_analysis_tool = E2BDataAnalysisTool(
-        on_stdout=lambda stdout: st.session_state.responses.append(stdout),
-        on_stderr=lambda stderr: st.session_state.responses.append(stderr),
-        on_artifact=save_artifact,
-    )
-    tools = [e2b_data_analysis_tool.as_tool()]
+    tools = [st.session_state.e2b_data_analysis_tool.as_tool()]
     llm = ChatOpenAI(model="gpt-4", temperature=0)
     agent = initialize_agent(
         tools,
@@ -39,17 +32,23 @@ def init_agent():
         verbose=True,
         handle_parsing_errors=True,
     )
-    return e2b_data_analysis_tool, agent
+    return agent
 
 
 @st.cache_resource
-def upload_e2b(_e2b_data_analysis_tool, _file):
-    remote_path = _e2b_data_analysis_tool.upload_file(
+def init_upload_sandbox(_file):
+    e2b_data_analysis_tool = E2BDataAnalysisTool(
+        on_stdout=lambda stdout: print(stdout),
+        on_stderr=lambda stderr: print(stderr),
+        on_artifact=save_artifact,
+    )
+    remote_path = e2b_data_analysis_tool.upload_file(
         file=_file,
         # description=f"Data columns consist of {', '.join(list(data.columns))}",
         description="Dataset under consideration."
     )
-    return remote_path
+    print(remote_path)
+    return e2b_data_analysis_tool
 
 
 # Function to initialize session state variables
@@ -62,19 +61,14 @@ def initialize_session_state():
         st.session_state["file_uploaded"] = False
 
 
-# Cached function to process the query
-
-def process_query(agent, query):
-    return agent.run(query)
-
-
 # Function to handle query submission
-def handle_query_submission(agent, submit_button, query, query_warning_placeholder):
+def handle_query_submission(submit_button, query, query_warning_placeholder):
     if submit_button:
         if not query.strip():
             query_warning_placeholder.warning("Please enter a query.")
         else:
-            response = process_query(agent, query)
+            st_callback = StreamlitCallbackHandler(st.container())
+            response = st.session_state.agent.run(query, callbacks=[st_callback])
             st.session_state.responses.append(response)
             query_warning_placeholder.empty()
 
@@ -103,9 +97,6 @@ def display_responses(response_container):
 def main():
     st.title("Data Chat")
 
-    # Initialize tools and agent
-    e2b_data_analysis_tool, agent = init_agent()
-
     # Sidebar for controls
     st.sidebar.title("Controls")
     initialize_session_state()
@@ -121,8 +112,10 @@ def main():
     if uploaded_file is not None:
         data = pd.read_csv(uploaded_file)
         st.write(data)
-        remote_path = upload_e2b(e2b_data_analysis_tool, uploaded_file)
-        print("UPLOADED FILE: ", remote_path)
+        # Initialize tools and agent
+
+        st.session_state.e2b_data_analysis_tool = init_upload_sandbox(uploaded_file)
+        st.session_state.agent = init_agent()
         st.sidebar.success("File Uploaded Successfully!")
     else:
         st.sidebar.warning("Please upload a file.")
@@ -131,7 +124,7 @@ def main():
     response_container = st.empty()
 
     # Process query
-    handle_query_submission(agent, submit_button, query, query_warning_placeholder)
+    handle_query_submission(submit_button, query, query_warning_placeholder)
 
     # Clear session
     handle_session_reset(clear_session_button)
@@ -141,4 +134,6 @@ def main():
 
 
 if __name__ == "__main__":
+    load_dotenv()
+    st.set_page_config(layout="wide")
     main()
