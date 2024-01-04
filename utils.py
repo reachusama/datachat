@@ -13,14 +13,14 @@ def process_artifact(artifact):
     print("New matplotlib chart generated:", artifact.name)
     file = artifact.download()
     basename = os.path.basename(artifact.name)
-    with open(f"./resources/outputs/{basename}", "wb") as f:
+    with open(f"resources/outputs/{basename}", "wb") as f:
         f.write(file)
 
 
 def process_response(response):
     if 'sandbox' in response:
         url, response = extract_and_remove_image_link(response)
-        url = url.replace("sandbox:/home/user/artifacts/", '../resources/outputs/')
+        url = url.replace("sandbox:/home/user/artifacts/", 'resources/outputs/')
         return [
             {"type": "text", "output": response},
             {"type": "image", "output": url}

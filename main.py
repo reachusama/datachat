@@ -96,7 +96,7 @@ def display_responses(response_container):
 
 # Main function
 def main():
-    st.title("Data Chat")
+    st.title("Natural Data Analysis")
 
     # Sidebar for controls
     st.sidebar.title("Controls")

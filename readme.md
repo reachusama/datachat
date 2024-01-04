@@ -10,7 +10,7 @@ Data Analysis with Natural Language Queries using GenAI & Streamlit
 
 ### Results
 
-![Alt Text](./resources/llms/results.png)
+![Alt Text](resources/llms/results.png)
 
 ## Tools
 
