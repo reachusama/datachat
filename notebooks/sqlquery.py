@@ -8,7 +8,7 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.tools import BaseTool, Tool
 from pandas.core.frame import DataFrame
 
-if True:
+if TYPE_CHECKING:
     import pandasql as psql
 
 base_description = "Execute SQL queries on pandas dataframes"
@@ -22,7 +22,7 @@ class DataFrameInputField:
         yield cls.validate
 
     @classmethod
-    def validate(cls, v):
+    def validate(cls, v: Any) -> DataFrame:
         if not isinstance(v, DataFrame):
             raise ValueError('Must be a pandas DataFrame')
         if v.empty:
@@ -36,8 +36,8 @@ class SQLQueryInput(BaseModel):
     sql_query: str = Field(
         ...,
         description=(
-            "SQL query to execute on the DataFrame"
-            "Use `dataframe` as Table Name in the SQL query."
+            "SQL query to execute on the DataFrame. "
+            "Use `dataframe` as Table Name in the SQL query. "
             "It should not be in markdown format."
         ),
         examples=[
@@ -46,7 +46,7 @@ class SQLQueryInput(BaseModel):
         ],
     )
     max_rows: Optional[int] = Field(
-        15,  # Default value
+        15,
         description="Maximum number of rows to include in the result"
     )
 
@@ -55,26 +55,20 @@ class SQLQueryTool(BaseTool):
     """Tool that runs SQL queries on a Pandas DataFrame."""
 
     name: str = "sql_query"
-    args_schema: Type[BaseModel] = SQLQueryInput
+    args_schema: type[BaseModel] = SQLQueryInput
     description: str = base_description
     dataframe: Any
 
-    def __init__(self,
-                 dataframe: DataFrameInputField,
-                 **kwargs: Any):
+    def __init__(self, dataframe: DataFrameInputField, **kwargs: Any):
         try:
-            if dataframe is not None:
-                import pandasql as psql
-
-            # TODO: Add SQL Databases for performing queries, i.e. Allowing agents access to DBs.
+            import pandasql
         except ImportError as e:
             raise ImportError(
                 "Unable to import pandasql, please install with `pip install pandasql`."
             ) from e
 
         super().__init__(description=base_description, **kwargs)
-        if dataframe is not None:
-            self.dataframe = dataframe
+        self.dataframe = dataframe
 
     def _run(
             self,
@@ -83,16 +77,13 @@ class SQLQueryTool(BaseTool):
             run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         try:
-            if self.dataframe is not None:
-                globals_dict = {'dataframe': self.dataframe}
-                result_df = psql.sqldf(sql_query, globals_dict)
-                if max_rows is not None:
-                    result_df = result_df.head(max_rows)
+            globals_dict = {'dataframe': self.dataframe}
+            result_df = psql.sqldf(sql_query, globals_dict)
+            if max_rows is not None:
+                result_df = result_df.head(max_rows)
 
-                result_json = result_df.to_json(orient='records')
-                return result_json
-
-            # TODO: Add SQL Database for performing queries, i.e. Allowing agents access to DBs.
+            result_json = result_df.to_json(orient='records')
+            return result_json
         except Exception as e:
             print("Error: " + str(e))
             return json.dumps({"error": str(e)})
