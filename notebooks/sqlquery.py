@@ -51,7 +51,7 @@ class SQLQueryInput(BaseModel):
     )
 
 
-class SQLQueryTool(BaseTool):
+class PandasSQLQueryTool(BaseTool):
     """Tool that runs SQL queries on a Pandas DataFrame."""
 
     name: str = "sql_query"
