@@ -59,9 +59,6 @@ def handle_query_submission(submit_button, query, query_warning_placeholder):
         if not query.strip():
             query_warning_placeholder.warning("Please enter a query.")
         else:
-            # st.session_state.progress = st.container()
-            # st_callback = StreamlitCallbackHandler(st.session_state.progress)
-            # response = st.session_state.agent.run(query, callbacks=[st_callback])
             with st.spinner("Thinking..."):
                 response = st.session_state.agent.run(query)
                 response = process_response(response)
