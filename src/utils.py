@@ -1,5 +1,5 @@
-import re
 import os
+import re
 
 
 def extract_and_remove_image_link(markdown_str):
@@ -18,12 +18,9 @@ def process_artifact(artifact):
 
 
 def process_response(response):
-    if 'sandbox' in response:
+    if "sandbox" in response:
         url, response = extract_and_remove_image_link(response)
-        url = url.replace("sandbox:/home/user/artifacts/", 'resources/outputs/')
-        return [
-            {"type": "text", "output": response},
-            {"type": "image", "output": url}
-        ]
+        url = url.replace("sandbox:/home/user/artifacts/", "resources/outputs/")
+        return [{"type": "text", "output": response}, {"type": "image", "output": url}]
 
     return [{"type": "text", "output": response}]

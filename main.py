@@ -1,17 +1,14 @@
-from dotenv import load_dotenv
 from io import StringIO
-import streamlit as st
-import pandas as pd
 
+import pandas as pd
+import streamlit as st
+from dotenv import load_dotenv
 from langchain.agents import AgentType, initialize_agent
+from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.tools import E2BDataAnalysisTool
-from langchain.callbacks import StreamlitCallbackHandler
 
-from utils import (
-    process_artifact,
-    process_response
-)
+from utils import process_artifact, process_response
 
 
 @st.cache_resource
@@ -51,7 +48,7 @@ def init_agent():
 
 
 def initialize_session_state():
-    if 'responses' not in st.session_state:
+    if "responses" not in st.session_state:
         st.session_state.responses = []
     if "file_uploader_key" not in st.session_state:
         st.session_state["file_uploader_key"] = 0
@@ -65,7 +62,7 @@ def handle_query_submission(submit_button, query, query_warning_placeholder):
             # st.session_state.progress = st.container()
             # st_callback = StreamlitCallbackHandler(st.session_state.progress)
             # response = st.session_state.agent.run(query, callbacks=[st_callback])
-            with st.spinner('Thinking...'):
+            with st.spinner("Thinking..."):
                 response = st.session_state.agent.run(query)
                 response = process_response(response)
                 st.session_state.responses.append(response)
@@ -88,10 +85,10 @@ def display_responses(response_container):
             for idx, response in enumerate(st.session_state.responses, 1):
                 with st.expander(f"Response #{idx}", expanded=True):
                     for res in response:
-                        if res['type'] == 'text':
-                            st.write(res['output'])
+                        if res["type"] == "text":
+                            st.write(res["output"])
                         else:
-                            st.image(res['output'])
+                            st.image(res["output"])
 
 
 # Main function
@@ -108,7 +105,9 @@ def main():
     clear_session_button = st.sidebar.button("Clear Session")
 
     # File uploader
-    uploaded_file = st.sidebar.file_uploader("Upload a File", key=st.session_state["file_uploader_key"])
+    uploaded_file = st.sidebar.file_uploader(
+        "Upload a File", key=st.session_state["file_uploader_key"]
+    )
 
     if uploaded_file is not None:
         data = pd.read_csv(uploaded_file)
