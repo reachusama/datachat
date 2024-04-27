@@ -4,11 +4,10 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 from langchain.agents import AgentType, initialize_agent
-from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.tools import E2BDataAnalysisTool
 
-from utils import process_artifact, process_response
+from src.utils import process_artifact, process_response
 
 
 @st.cache_resource
@@ -52,18 +51,22 @@ def initialize_session_state():
         st.session_state.responses = []
     if "file_uploader_key" not in st.session_state:
         st.session_state["file_uploader_key"] = 0
+    if "agent" not in st.session_state:
+        st.session_state["agent"] = None
 
 
 def handle_query_submission(submit_button, query, query_warning_placeholder):
     if submit_button:
         if not query.strip():
-            query_warning_placeholder.warning("Please enter a query.")
-        else:
+            query_warning_placeholder.warning("Please enter a query")
+        elif st.session_state.agent:
             with st.spinner("Thinking..."):
                 response = st.session_state.agent.run(query)
                 response = process_response(response)
                 st.session_state.responses.append(response)
                 query_warning_placeholder.empty()
+        else:
+            query_warning_placeholder.warning("Please upload a dataset")
 
 
 def handle_session_reset(clear_session_button):
@@ -90,7 +93,7 @@ def display_responses(response_container):
 
 # Main function
 def main():
-    st.title("Natural Data Analysis")
+    st.title("Natural langauge driven data analysis")
 
     # Sidebar for controls
     st.sidebar.title("Controls")
@@ -114,7 +117,7 @@ def main():
         st.session_state.agent = init_agent()
         st.sidebar.success("File Uploaded Successfully!")
     else:
-        st.sidebar.warning("Please upload a file.")
+        st.sidebar.warning("Please upload a dataset")
 
     response_container = st.empty()
     handle_query_submission(submit_button, query, query_warning_placeholder)
