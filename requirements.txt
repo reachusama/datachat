@@ -1,5 +1,6 @@
 streamlit
 langchain
-eb2
+langchain-community
+e2b
 openai
 python-dotenv

@@ -4,8 +4,8 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 from langchain.agents import AgentType, initialize_agent
-from langchain.chat_models import ChatOpenAI
-from langchain.tools import E2BDataAnalysisTool
+from langchain_community.chat_models import ChatOpenAI
+from langchain_community.tools import E2BDataAnalysisTool
 
 from src.utils import process_artifact, process_response
 
@@ -16,6 +16,7 @@ def init_upload_sandbox(_data):
         on_stdout=lambda stdout: print(f"stdout: {stdout}"),
         on_stderr=lambda stderr: print(f"stderr: {stderr}"),
         on_artifact=process_artifact,
+        # api_key=""
     )
 
     csv_data = _data.to_csv(index=False)
